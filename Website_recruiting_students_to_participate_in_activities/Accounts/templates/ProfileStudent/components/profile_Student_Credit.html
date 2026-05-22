@@ -1,0 +1,30 @@
+{% load crispy_forms_tags %}
+ิ<br>
+<br>
+<form method="post" class="max-w-7xl mx-auto px-4 py-8">
+    {% csrf_token %}
+    {{ formset.management_form }}
+
+    <div class="space-y-8">
+        {% for form in formset %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+                <h2 class="text-white text-lg font-semibold">
+                    ปีการศึกษา {{ form.instance.academic_year }}
+                </h2>
+            </div>
+
+            <div class="p-6">
+                {{ form|crispy }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="mt-10 flex justify-center">
+        <button type="submit" class="px-10 py-3 rounded-xl bg-blue-600 text-white text-lg font-semibold hover:bg-blue-700 active:scale-95 focus:outline-none focus:ring-4 focus:ring-blue-300 transition">
+            💾 บันทึกข้อมูลทั้งหมด
+        </button>
+    </div>
+</form>

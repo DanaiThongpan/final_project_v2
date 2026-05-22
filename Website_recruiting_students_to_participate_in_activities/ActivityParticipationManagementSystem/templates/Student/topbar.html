@@ -1,0 +1,58 @@
+<header class="fixed top-0 w-full lg:flex justify-between items-center px-6 py-4 bg-white z-50 drop-shadow-md">
+
+    <a class="flex items-center space-x-2" href="{% url 'homeStudent' %}">
+        <img src="https://training.ubu.ac.th/assets/img/ubu_logo.png" alt="UBU Logo" class="w-10 h-10">
+        <h2 class="text-xl font-bold">ระบบรับสมัครนักศึกษาเข้าร่วมกิจกรรม</h2>
+    </a>
+
+    <nav class="gap-x-6 gap-y-2 lg:gap-y-0 grid lg:flex mt-5 lg:mt-0">
+
+        <!-- <a href="{% url 'homeStudent' %}" class="text-black-600 font-bold hover:text-blue-500">หน้าแรก</a> -->
+
+        <div class="flex items-center space-x-4">
+            <!-- Notification Dropdown -->
+            <div class="relative">
+                <button id="notificationDropdown" class="p-2 rounded-full hover:bg-gray-200 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell-ring"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M4 2C2.8 3.7 2 5.7 2 8"/><path d="M22 8c0-2.3-.8-4.3-2-6"/></svg>
+                </button>
+
+                <div id="notificationMenu" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg z-50">
+                    <div class="py-1">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">แจ้งเตือน 1</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">แจ้งเตือน 2</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">แจ้งเตือน 3</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">แจ้งเตือน 4</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">แจ้งเตือน 5</a>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- User Dropdown -->
+            <div class="relative">
+                
+                <button id="userDropdown" class="flex items-center space-x-2 font-bold text-blue-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round"><path d="M18 20a6 6 0 0 0-12 0"/><circle cx="12" cy="10" r="4"/><circle cx="12" cy="12" r="10"/></svg>
+                    <div class="text-black-600 font-bold text-blue-500">
+                        สวัสดี {{ user_student.user.first_name }} {{ user_student.user.last_name }} (
+                            {% if user_student %}
+                                    นักศึกษาคณะ{{user_student.faculty}}
+                            {% endif %}
+                        )
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="5 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+
+                <div id="userMenu" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg z-50">
+                    <div class="py-1">
+                        <a href="{% url 'homeStudent' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">หน้าแรก</a>
+                        <a href="{% url 'profile_Student' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ข้อมูลส่วนตัว</a>
+                        <a href="{% url 'activity_student_history' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ประวัติการเข้าร่วมกิจกรรม</a>
+                        <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ออกจากระบบ</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>       
+    </nav>
+
+</header>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบรับสมัครนักศึกษาเข้าร่วมกิจกรรม</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="https://training.ubu.ac.th/assets/img/ubu_logo.png" sizes="32x32" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'slide-in-left': 'slide-in-left 0.7s ease-out forwards',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'slide-in-left': {
+                            '0%': { transform: 'translateX(-100%)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' },
+                        },
+                    }
+                }
+            }
+        }
+
+        function setupDropdown(buttonId, menuId) {
+            const button = document.getElementById(buttonId);
+            const menu = document.getElementById(menuId);
+
+            button.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!button.contains(event.target) && !menu.contains(event.target)) {
+                    menu.classList.add('hidden');
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupDropdown('notificationDropdown', 'notificationMenu');
+            setupDropdown('userDropdown', 'userMenu');
+
+            const header = document.querySelector("header");
+
+            // ฟังก์ชันตรวจสอบการเลื่อนหน้าจอ
+            function checkScroll() {
+                if (window.scrollY > 0) {
+                    header.classList.add("shadow-md");
+                } else {
+                    header.classList.remove("shadow-md");
+                }
+            }
+
+            // ตรวจสอบการเลื่อนหน้าจอเมื่อโหลดหน้าเว็บ
+            checkScroll();
+
+            // ตรวจสอบการเลื่อนหน้าจอทุกครั้งที่มีการเลื่อน
+            window.addEventListener("scroll", checkScroll);
+        });
+
+
+
+        function confirmRegistration(form) {
+            Swal.fire({
+                title: 'ยืนยันการลงทะเบียน?',
+                text: "คุณต้องการยืนยันรายชื่อใช่หรือไม่?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit(); // ส่งฟอร์มเมื่อผู้ใช้กดยืนยัน
+                }
+            });
+
+            return false; // หยุดการส่งฟอร์มแบบเริ่มต้น
+        }
+
+
+        function confirmCancellation() {
+            return confirm("คุณต้องการยกเลิกการเข้าร่วมกิจกรรมนี้ใช่หรือไม่?");
+        }
+
+        function toggleSelectAll(source) {
+            const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = source.checked;
+            });
+        }
+
+    </script>
+</head>
+
+<body style="font-family: 'Prompt' ;">
+    <div class="min-h-screen h-full">
+        {% include 'Responsible/topbar.html' %}
+
+        {% block content %}
+
+        {% endblock %}
+
+        {% include 'Responsible/footer.html' %}
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,383 @@
+{% load crispy_forms_tags %}
+<div class="w-full p-5  text-xl mt-20">
+    <h1 class="text-2xl text-center">รายละเอียดประกาศรับสมัคร</h1>
+</div>
+
+<body class="w-full bg-white">
+
+    <div
+        class="w-full md:mx-auto md:w-9/12  bg-white grid grid-cols-1 md:grid-cols-3 border px-4 md:p-10 rounded-xl shadow-2xl">
+
+        <div class=" mx-auto md:col-span-2  md:border-r-2 md:border-b-0 border-b-2 border-gray-400">
+            <p class="text-2xl p-5">กิจกรรม {{activity_student_get_id.activity_name}}</p>
+            <p class="p-0.5 bg-amber-700 mx-5"></p>
+            <!-- <div class="flex justify-center shadow-xl rounded-lg shadow-slate-400 overflow-hidden h-fit m-5">
+                <img src="{{i.img_activity.url}}" alt="Recruitment_announcer/media/activity/images"
+                    class="object-cover    w-fit ">
+            </div> -->
+
+            <div class="text-xl font-light text-gray-600 p-5 gap-y-4 grid ">
+                <!-- <p>
+                    <label for="" class="text-yellow-700">
+                        เปิดให้ลงทะเบียนถึงวันที่
+                    </label>
+                    {{activity_student_get_id.due_date_registration}}
+                </p> -->
+                <p>
+                    <label for="" class="text-yellow-700">
+                        ผู้รับผิดชอบโครงการ
+                    </label>
+                    {% if activity_student_get_id.user_faculty_staff %}
+                        {{activity_student_get_id.user_faculty_staff.title}}
+                        {{activity_student_get_id.user_faculty_staff.user.first_name}}
+                        {{activity_student_get_id.user_faculty_staff.user.last_name}}
+                    {% elif activity_student_get_id.user_responsible %}
+                        {{activity_student_get_id.user_responsible.title}}
+                        {{activity_student_get_id.user_responsible.user.first_name}}
+                        {{activity_student_get_id.user_responsible.user.last_name}}
+                    {% endif %}                    
+                </p>
+                <p><label for="" class="text-yellow-700">จำนวนรับ</label> {{activity_student_get_id.max_participants}} คน</p>
+                <!-- <p><label for="" class="text-yellow-700">สถานที่จัดกิจกรรม</label> {{activity_student_get_id.place}}</p> -->
+                <p><label for="" class="text-yellow-700">ด้านที่</label> {{activity_student_get_id.activity_type}}</p>
+                <p><label for="" class="text-yellow-700">หน่วยกิตกิจกรรม</label> {{activity_student_get_id.credit}}</p>
+                <p><label for="" class="text-yellow-700">คำอธิบาย</label> {{activity_student_get_id.description}}</p>
+            </div>
+            <p class="p-0.5 bg-amber-700 mx-5"></p>
+            <div class="flex justify-center shadow-xl rounded-lg shadow-slate-400 overflow-hidden h-fit m-5">
+                <img src="{{activity_student_get_id.img_activity.url}}" alt="Recruitment_announcer/media/activity/images"
+                    class="object-cover    w-fit ">
+            </div>
+
+        </div>
+        <div class="p-2 py-2 mx-2 mt-2 md:mt-0">
+            <h2 class="text-xl font-bold text-center">วันที่จัดกิจกรรม</h2>
+            __________________________________________________
+            
+            <!-- วนลูปแสดงข้อมูลแต่ละ time_event -->
+            {% for time_event in time_events %}
+                <div class="flex items-center mb-4">  <!-- เพิ่ม mb-4 เพื่อเว้นระยะห่างระหว่างบรรทัด -->
+                    <div class="mix-blend-multiply bg-green-400 h-4 w-4 rounded-full"></div>
+                    <p class="m-4">
+                        {{ time_event.start_date_activity.date }}
+                        <label for="" class="text-yellow-600">
+                            <!-- แสดงเวลาในรูปแบบที่เป็นเวลาไทย -->
+                            ({% load tz %}{{ time_event.start_date_activity|timezone:"Asia/Bangkok"|date:"H:i" }} - 
+                            {% load tz %}{{ time_event.due_date_activity|timezone:"Asia/Bangkok"|date:"H:i" }})
+                        </label><br>
+                        สถานที่ {{time_event.place}}
+                    </p>
+                </div>
+            {% endfor %}
+        <!-- </div> -->
+
+            <p class="mx-8 text-green-500">เปิดให้ลงทะเบียนถึง
+                {{activity_student_get_id.due_date_registration.date}} 
+                <label for="" class="text-yellow-600">
+                    ({% load tz %}{{ activity_student_get_id.due_date_registration|timezone:"Asia/Bangkok"|date:"H:i" }})
+                </label>
+            </p>
+
+            <div class="mx-8 mt-2">
+                <h2 class="my-4 text-blue-500">(ลงทะเบียนแล้ว {{ registered_students|length }} คน)</h2>
+                <button class="bg-blue-500 text-white rounded-md px-4 py-2 hover:bg-blue-700 transition"
+                    onclick="openModal('modelConfirm')">
+                    ตรวจสอบรายชื่อ
+                </button>
+            </div>
+
+
+
+
+            <div class="text-center mt-2 mx-8">
+
+                {% if activity_student_get_id.is_registration_open == True %}
+                <!-- แสดงข้อความว่าผู้ลงทะเบียนครบแล้ว -->
+                <div class="w-fit p-1 px-2 my-2 text-green-500">
+                    เปิดรับสมัครอยู่
+                </div>
+                {% endif %}
+                {% if existing_registration %}
+                <!-- แสดงปุ่มยกเลิกการสมัคร ถ้ามีการลงทะเบียนอยู่แล้ว -->
+                <form id="activity-form" action="" method="post" onsubmit="return confirmCancellation(this);">
+                    {% csrf_token %}
+                    <button type="submit"
+                        class="w-full px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-700 focus:outline-none focus:bg-red-700">
+                        ยกเลิกการเข้าร่วมกิจกรรม
+                    </button>
+                </form>
+                {% elif activity_student_get_id.max_participants == activity_student_get_id.registered_count %}
+                <!-- แสดงข้อความว่าผู้ลงทะเบียนครบแล้ว -->
+                <button type="button" class="w-full px-4 py-2 bg-red-500 text-white rounded-md cursor-not-allowed">
+                    ผู้ลงทะเบียนครบแล้ว
+                </button>
+                {% elif activity_student_get_id.is_registration_open != True %}
+                <!-- แสดงข้อความว่าผู้ลงทะเบียนครบแล้ว -->
+                <button type="button" class="w-full px-4 py-2 bg-red-500 text-white rounded-md cursor-not-allowed">
+                    ปิดรับสมัครแล้ว
+                </button>
+
+                {% else %}
+                <!-- แสดงปุ่มสมัคร ถ้ายังไม่เต็มและยังไม่ได้ลงทะเบียน -->
+                <form id="activity-form" action="" method="post" onsubmit="return confirmRegistration(this);">
+                    {% csrf_token %}
+                    <button type="submit"
+                        class="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-700">
+                        ลงทะเบียนเข้าร่วมกิจกรรม
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
+
+        </div>
+    </div>
+
+
+    <div id="modelConfirm"
+        class="fixed hidden z-50 inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full px-4 ">
+        <div class="relative top-40 mx-auto shadow-xl rounded-md bg-white max-w-3xl">
+
+            <div class="flex justify-end p-2">
+                <button onclick="closeModal('modelConfirm')" type="button"
+                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="overflow-hidden rounded-lg shadow-lg bg-white mb-20 border">
+                <div class="p-4 flex flex-col md:flex-row items-center justify-between">
+                    <!-- จำนวนรายการต่อหน้า -->
+                    <div class="flex items-center mb-4 md:mb-0">
+                        <label for="entries" class="text-gray-700 font-medium mr-2">แสดง</label>
+                        <select id="entries"
+                            class="block w-auto bg-white border border-gray-300 hover:border-gray-400 px-3 py-2 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300">
+                            <option value="5" selected>5</option>
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                        </select>
+                        <span class="ml-2 text-gray-700">รายการ</span>
+                    </div>
+
+                    <!-- ช่องค้นหา -->
+                    <div class="flex items-center">
+                        <label for="search" class="text-gray-700 font-medium mr-2">ค้นหา</label>
+                        <input type="text" id="search"
+                            class="block w-full md:w-64 bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300"
+                            placeholder="พิมพ์เพื่อค้นหา">
+                    </div>
+                </div>
+
+                <div class="mx-5 border rounded-lg overflow-hidden overflow-x-auto shadow-md">
+
+                    <table id="example" class="w-full table-auto">
+                        <thead
+                            class="from-gray-600 via-gray-800 to-gray-500 bg-gradient-to-r text-nowrap text-white font-semibold">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm uppercase">รหัสนักศึกษา</th>
+                                <th class="px-6 py-4 text-left text-sm uppercase">คำนำหน้าชื่อ</th>
+                                <th class="px-6 py-4 text-left text-sm uppercase">ชื่อ</th>
+                                <th class="px-6 py-4 text-left text-sm uppercase">นามสกุล</th>
+                                <th class="px-6 py-4 text-left text-sm uppercase">คณะ/สังกัด</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+
+                            {% for registered_students in registered_students %}
+                            <tr class="hover:bg-gray-50 border">
+                                <td class="px-6 py-4 text-sm text-gray-800">
+                                    <p class="text-gray-900 whitespace-no-wrap">
+                                        {{ registered_students.user_student.user }}
+                                    </p>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-800">
+                                    <p class="text-gray-900 whitespace-no-wrap">
+                                        {{ registered_students.user_student.title }}
+                                    </p>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-800">
+                                    <p class="text-gray-900 whitespace-no-wrap">
+                                        {{ registered_students.user_student.user.first_name }}
+                                    </p>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-800">
+                                    <p class="text-gray-900 whitespace-no-wrap">
+                                        {{ registered_students.user_student.user.last_name }}
+                                    </p>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-800">
+                                    <p class="text-gray-900 whitespace-no-wrap">{{ registered_students.user_student.faculty }}
+                                    </p>
+                                </td>
+
+                            </tr>
+                            {% endfor %}
+
+                        </tbody>
+
+
+                    </table>
+
+                </div>
+
+
+                <div id="custom-info"
+                    class="mt-4 text-gray-700 text-sm text-center font-medium bg-gray-50 py-2 rounded-lg ">
+                    <!-- อัปเดตข้อมูลตรงนี้ผ่าน JS -->
+                </div>
+
+
+                <div id="custom-pagination" class="flex justify-between items-center mt-4 px-4 py-2">
+                    <button id="prev-page"
+                        class="border px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed">
+                        ก่อนหน้า
+                    </button>
+                    <div id="page-numbers" class="flex space-x-2"></div>
+                    <button id="next-page"
+                        class="border px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed">
+                        ถัดไป
+                    </button>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <style>
+        div.dataTables_length,
+        div.dataTables_paginate {
+            display: none !important;
+        }
+
+        div.dataTables_info {
+            display: none !important;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            const table = $('#example').DataTable({
+                responsive: true,
+                paging: true,
+                pageLength: 5,
+                language: {
+                    search: "ค้นหา:",
+                    info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                    infoEmpty: "ไม่มีข้อมูลที่จะแสดง",
+                    infoFiltered: "(กรองจากทั้งหมด _MAX_ รายการ)",
+                    paginate: {
+                        first: "หน้าแรก",
+                        last: "หน้าสุดท้าย",
+                        next: "ถัดไป",
+                        previous: "ก่อนหน้า"
+                    },
+                    zeroRecords: "ไม่พบข้อมูลที่ค้นหา",
+                },
+                dom: 'lrtip', // ซ่อน pagination และ lengthMenu ของ DataTables
+            });
+
+            function updateCustomInfo() {
+                const pageInfo = table.page.info();
+                $('#custom-info').text(
+                    `กำลังแสดง ${pageInfo.start + 1} ถึง ${pageInfo.end} จากทั้งหมด ${pageInfo.recordsDisplay} รายการ`
+                );
+            }
+
+            // Initial update
+            updateCustomInfo();
+
+            // Update custom pagination
+            function updatePagination() {
+                const pageInfo = table.page.info();
+                $('#page-numbers').empty();
+                for (let i = 0; i < pageInfo.pages; i++) {
+                    $('#page-numbers').append(`
+                        <button data-page="${i}" class="px-4  py-2 rounded-md ${i === pageInfo.page
+                            ? 'bg-gradient-to-b from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-500 hover:bg-gradient-to-b text-white'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }">
+                            ${i + 1}
+                        </button>
+                    `);
+                }
+                $('#pagination-info').text(`หน้า ${pageInfo.page + 1} จาก ${pageInfo.pages}`);
+                $('#prev-page').prop('disabled', pageInfo.page === 0);
+                $('#next-page').prop('disabled', pageInfo.page + 1 === pageInfo.pages);
+            }
+
+            // Initial pagination update
+            updatePagination();
+
+            // Custom pagination buttons
+            $('#prev-page').on('click', function () {
+                table.page('previous').draw('page');
+                updatePagination();
+            });
+
+            $('#next-page').on('click', function () {
+                table.page('next').draw('page');
+                updatePagination();
+            });
+
+            // Click page number
+            $('#page-numbers').on('click', 'button', function () {
+                const page = $(this).data('page');
+                table.page(page).draw('page');
+                updatePagination();
+            });
+
+            // Custom length menu behavior
+            $('#entries').on('change', function () {
+                table.page.len($(this).val()).draw();
+                updatePagination();
+            });
+
+            // Custom search behavior
+            $('#search').on('input', function () {
+                table.search($(this).val()).draw();
+            });
+
+            // facultyFilter เปลี่ยนประเภทกิจกรรม 
+            $('#facultyFilter').on('change', function () {
+                const selectedFaculty = $(this).val();
+                table.column(2).search(selectedFaculty).draw();
+            });
+
+            // ฟิลเตอร์ตามสถานะ
+            $('#statusFilter').on('change', function () {
+                const selectedStatus = $(this).val();
+                table.column(7).search(selectedStatus).draw();
+            });
+
+            table.on('draw', function () {
+                $('td.dataTables_empty').addClass('p-2');
+
+
+            });
+
+            function add_p2() {
+                $('td.dataTables_empty').addClass('p-2');
+            };
+            add_p2();
+        });
+
+
+        window.openModal = function (modalId) {
+            document.getElementById(modalId).style.display = 'block'
+            document.getElementsByTagName('body')[0].classList.add('overflow-y-hidden')
+        }
+
+        window.closeModal = function (modalId) {
+            document.getElementById(modalId).style.display = 'none'
+            document.getElementsByTagName('body')[0].classList.remove('overflow-y-hidden')
+        }
+    </script>
+
+</body>

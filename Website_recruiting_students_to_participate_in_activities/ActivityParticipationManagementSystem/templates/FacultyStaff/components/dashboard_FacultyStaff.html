@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 mt-40 min-h-screen h-full md:mt-20">
+    <div class="container mx-auto p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">Dashboard</h1>
+
+        <div class="flex flex-wrap gap-4 mb-6">
+            <div>
+                <label for="activityTypeFilter" class="block text-sm font-semibold text-gray-700 mb-2">ประเภทกิจกรรม</label>
+                <select id="activityTypeFilter" class="block bg-white border border-gray-300 px-4 py-2 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">ทั้งหมด</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="facultyFilter" class="block text-sm font-semibold text-gray-700 mb-2">คณะ (ผู้สร้าง/ผู้รับผิดชอบ)</label>
+                <select id="facultyFilter" class="block bg-white border border-gray-300 px-4 py-2 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">ทั้งหมด</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="yearFilter" class="block text-sm font-semibold text-gray-700 mb-2">ปีการศึกษา</label>
+                <select id="yearFilter" class="block bg-white border border-gray-300 px-4 py-2 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">ทั้งหมด</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="semesterFilter" class="block text-sm font-semibold text-gray-700 mb-2">ภาคเรียน</label>
+                <select id="semesterFilter" class="block bg-white border border-gray-300 px-4 py-2 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">ทั้งหมด</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
+                <h2 class="text-lg font-bold text-gray-700 mb-2">กิจกรรมทั้งหมด</h2>
+                <p id="total-activities" class="text-2xl font-bold text-blue-600">0</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
+                <h2 class="text-lg font-bold text-gray-700 mb-2">กิจกรรมที่อนุมัติ</h2>
+                <p id="approved-activities" class="text-2xl font-bold text-green-600">0</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 border-l-4 border-yellow-500">
+                <h2 class="text-lg font-bold text-gray-700 mb-2">จำนวนผู้ลงทะเบียนทั้งหมด</h2>
+                <p id="registered-count" class="text-2xl font-bold text-yellow-600">0</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-lg shadow p-4">
+                <h2 class="text-lg font-bold text-gray-700 mb-4">สัดส่วนประเภทกิจกรรม (Pie)</h2>
+                <div class="relative h-80">
+                    <canvas id="activityTypeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-4">
+                <h2 class="text-lg font-bold text-gray-700 mb-4">จำนวนกิจกรรมแต่ละด้าน (Bar)</h2>
+                <div class="relative h-80">
+                    <canvas id="activityTypeBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const COLOR_PALETTE = [
+            '#4CAF50', '#FF9800', '#2196F3', '#F44336', '#9C27B0', '#607D8B'
+        ];
+
+        const ACTIVITY_ORDER_MAP = {
+            '1 ด้านวิชาการที่ส่งเสริมคุณลักษณะบัณฑิตที่พึงประสงค์': '1. วิชาการ',
+            '2 ด้านกีฬาหรือการส่งเสริมสุขภาพ': '2. กีฬา/สุขภาพ',
+            '3 ด้านบำเพ็ญประโยชน์หรือรักษาสิ่งแวดล้อม': '3. บำเพ็ญประโยชน์',
+            '4 ด้านเสริมสร้างคุณธรรมและจริยธรรม': '4. คุณธรรม',
+            '5 ด้านส่งเสริมศิลปะและวัฒนธรรม': '5. ศิลปะ/วัฒนธรรม',
+            '6 ด้านกิจกรรมอื่นๆ': '6. กิจกรรมอื่นๆ'
+        };
+        const ACTIVITY_KEYS_ORDER = Object.keys(ACTIVITY_ORDER_MAP);
+
+        let activityTypeChart;
+        let activityTypeBarChart;
+
+        async function fetchData() {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/ActivityParticipationManagementSystem/dashboard_api/");
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                return data.activities;
+            } catch (error) {
+                console.error("Failed to fetch data:", error);
+                document.body.innerHTML = `<div class="flex justify-center items-center h-screen"><div class="text-center p-10 text-red-600 bg-white rounded shadow">ไม่สามารถโหลดข้อมูล Dashboard ได้<br>กรุณาตรวจสอบการเชื่อมต่อ API</div></div>`;
+                return [];
+            }
+        }
+
+        async function renderDashboard() {
+            const activities = await fetchData();
+            if (activities.length === 0) return;
+
+            const activityTypeFilter = document.getElementById('activityTypeFilter');
+            const facultyFilter = document.getElementById('facultyFilter');
+            const yearFilter = document.getElementById('yearFilter');
+            const semesterFilter = document.getElementById('semesterFilter');
+
+            // Populate Filters
+            const activityTypes = [...new Set(activities.map(a => a.activity_type))].sort();
+            activityTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                activityTypeFilter.appendChild(option);
+            });
+            
+            const allFaculties = activities.flatMap(a => {
+                const faculties = [];
+                if (a.responsible && a.responsible.faculty) faculties.push(a.responsible.faculty);
+                if (a.staff && a.staff.faculty) faculties.push(a.staff.faculty);
+                return faculties;
+            });
+            const uniqueFaculties = [...new Set(allFaculties)].filter(f => f).sort();
+            uniqueFaculties.forEach(faculty => {
+                const option = document.createElement('option');
+                option.value = faculty;
+                option.textContent = faculty;
+                facultyFilter.appendChild(option);
+            });
+
+            const years = [...new Set(activities.map(a => a.academic_year))].sort((a, b) => b - a);
+            years.forEach(y => {
+                const option = document.createElement('option');
+                option.value = y;
+                option.textContent = `ปีการศึกษา ${y}`;
+                yearFilter.appendChild(option);
+            });
+
+            const semesters = [...new Set(activities.map(a => a.semester))].sort();
+            semesters.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s;
+                option.textContent = `เทอม ${s}`;
+                semesterFilter.appendChild(option);
+            });
+
+            // Filter Logic
+            function filterActivities() {
+                const selectedType = activityTypeFilter.value;
+                const selectedFaculty = facultyFilter.value; 
+                const selectedYear = yearFilter.value;
+                const selectedSemester = semesterFilter.value;
+
+                return activities.filter(activity => {
+                    const matchesType = !selectedType || activity.activity_type === selectedType;
+                    const matchesYear = !selectedYear || activity.academic_year == selectedYear;
+                    const matchesSemester = !selectedSemester || activity.semester == selectedSemester;
+                    
+                    let matchesFaculty = true;
+                    if (selectedFaculty) {
+                        const responsibleFaculty = activity.responsible ? activity.responsible.faculty : '';
+                        const staffFaculty = activity.staff ? activity.staff.faculty : '';
+                        matchesFaculty = (responsibleFaculty === selectedFaculty) || (staffFaculty === selectedFaculty);
+                    }
+
+                    return matchesType && matchesYear && matchesSemester && matchesFaculty;
+                });
+            }
+            
+            function updateDashboard() {
+                const filteredActivities = filterActivities();
+
+                // อัปเดตการ์ดสรุปด้านบน
+                document.getElementById('total-activities').textContent = filteredActivities.length;
+                document.getElementById('approved-activities').textContent = filteredActivities.filter(a => a.is_approved).length;
+                document.getElementById('registered-count').textContent = filteredActivities.reduce((sum, a) => sum + parseInt(a.registered_count || 0), 0);
+
+                updateCharts(filteredActivities);
+            }
+
+            function updateCharts(filteredActivities) {
+                const activityTypeCounts = {};
+                const activityTypeMaxParticipants = {};
+                const activityTypeRegisteredCount = {};
+
+                // วนลูปเพื่อบวกผลรวมของแต่ละด้าน
+                filteredActivities.forEach(activity => {
+                    const type = activity.activity_type;
+                    
+                    // นับจำนวนโปรเจกต์กิจกรรม
+                    activityTypeCounts[type] = (activityTypeCounts[type] || 0) + 1;
+                    
+                    // รวมยอดเปิดรับทั้งหมดของด้านนี้
+                    activityTypeMaxParticipants[type] = (activityTypeMaxParticipants[type] || 0) + parseInt(activity.max_participants || 0);
+                    
+                    // รวมยอดผู้สมัครทั้งหมดของด้านนี้
+                    activityTypeRegisteredCount[type] = (activityTypeRegisteredCount[type] || 0) + parseInt(activity.registered_count || 0);
+                });
+                
+                const orderedLabels = [];
+                const orderedData = [];
+                const orderedMaxParticipants = [];
+                const orderedRegisteredCount = [];
+                const backgroundColors = [];
+                const borderColors = [];
+
+                ACTIVITY_KEYS_ORDER.forEach((longKey, index) => {
+                    const count = activityTypeCounts[longKey] || 0;
+                    orderedLabels.push(ACTIVITY_ORDER_MAP[longKey]); 
+                    orderedData.push(count);
+                    
+                    // ดึงค่ายอดรวมใส่เข้าไปใน Dataset
+                    orderedMaxParticipants.push(activityTypeMaxParticipants[longKey] || 0);
+                    orderedRegisteredCount.push(activityTypeRegisteredCount[longKey] || 0);
+                    
+                    const color = COLOR_PALETTE[index % COLOR_PALETTE.length];
+                    backgroundColors.push(color);
+                    borderColors.push(color);
+                });
+
+                // Update Pie Chart
+                activityTypeChart.data.labels = orderedLabels;
+                activityTypeChart.data.datasets[0].data = orderedData;
+                activityTypeChart.data.datasets[0].backgroundColor = backgroundColors;
+                // แนบ Custom Data สำหรับเอาไว้แสดงใน Tooltip
+                activityTypeChart.data.datasets[0].maxParticipants = orderedMaxParticipants;
+                activityTypeChart.data.datasets[0].registeredCount = orderedRegisteredCount;
+                activityTypeChart.update();
+                
+                // Update Bar Chart
+                activityTypeBarChart.data.labels = orderedLabels;
+                activityTypeBarChart.data.datasets[0].data = orderedData;
+                activityTypeBarChart.data.datasets[0].backgroundColor = backgroundColors;
+                activityTypeBarChart.data.datasets[0].borderColor = borderColors; 
+                // แนบ Custom Data สำหรับเอาไว้แสดงใน Tooltip
+                activityTypeBarChart.data.datasets[0].maxParticipants = orderedMaxParticipants;
+                activityTypeBarChart.data.datasets[0].registeredCount = orderedRegisteredCount;
+                activityTypeBarChart.update();
+            }
+
+            // --- ส่วนสร้างกราฟและกำหนด Tooltip ---
+            // Function กลางสำหรับจัดรูปแบบ Tooltip ให้แสดงผลเหมือนกันทั้ง Pie และ Bar
+            const customTooltipCallbacks = {
+                label: function(context) {
+                    return ` จำนวนกิจกรรม: ${context.raw} โครงการ`;
+                },
+                afterLabel: function(context) {
+                    const dataIndex = context.dataIndex;
+                    const maxP = context.dataset.maxParticipants[dataIndex];
+                    const regP = context.dataset.registeredCount[dataIndex];
+                    const remainP = maxP - regP; // คำนวณที่นั่งคงเหลือให้ด้วย
+                    
+                    return [
+                        `เปิดรับรวมทั้งหมด: ${maxP} คน`,
+                        `ผู้สมัครรวมทั้งหมด: ${regP} คน`,
+                        `ที่นั่งคงเหลือ: ${remainP > 0 ? remainP : 0} คน`
+                    ];
+                }
+            };
+
+            const ctxPie = document.getElementById('activityTypeChart').getContext('2d');
+            activityTypeChart = new Chart(ctxPie, {
+                type: 'pie',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 1 }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+                        tooltip: { callbacks: customTooltipCallbacks }
+                    }
+                }
+            });
+            
+            const ctxBar = document.getElementById('activityTypeBarChart').getContext('2d');
+            activityTypeBarChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'จำนวนกิจกรรม', data: [], backgroundColor: [], borderColor: [], borderWidth: 1 }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                        x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 0 } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: customTooltipCallbacks }
+                    }
+                }
+            });
+
+            activityTypeFilter.addEventListener('change', updateDashboard);
+            facultyFilter.addEventListener('change', updateDashboard); 
+            yearFilter.addEventListener('change', updateDashboard);
+            semesterFilter.addEventListener('change', updateDashboard);
+
+            updateDashboard();
+        }
+
+        renderDashboard();
+    </script>
+</body>
+</html>

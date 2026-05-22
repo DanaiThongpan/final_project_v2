@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+    container_name: django_app
+    volumes:
+      - .:/app  # คัดลอกโค้ดโปรเจกต์ทั้งหมดเข้าใน container
+      - ./db:/app/db  # สร้าง volume สำหรับโฟลเดอร์ data
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True  # สามารถตั้งค่าตัวแปรแวดล้อมเพิ่มได้ตามต้องการ
+
+volumes:
+  sqlite_data:

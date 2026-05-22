@@ -1,0 +1,234 @@
+<div class="pt-24 px-8 p-6 lg:mt-0 mt-20">
+    <h1 class="text-2xl font-normal text-gray-900 text-center">ตรวจสอบรายชื่อนักศึกษาที่เข้าร่วมกิจกรรม
+        {{ activitys_responsible.activity_name }}</h1>
+</div>
+
+<div class="container mx-auto">
+    <div class="block text-lg font-medium text-gray-500 dark:text-gray-300 text-center">
+        <strong>เลือกนักศึกษาที่เข้าร่วมกิจกรรม</strong>
+    </div>
+
+
+    <div class="w-full md:w-full px-3 mb-6 mt-5 flex justify-center">
+        {% if activitys_responsible.img_activity %}
+        <img src="{{ activitys_responsible.img_activity.url }}" alt="Activity Image" class=" border border-gray-300 h-36 w-auto rounded-lg shadow-lg">
+        {% else %}
+        <span class="border border-gray-300 p-2">ไม่มีรูปภาพ</span>
+        {% endif %}
+    </div>
+    <div class="overflow-hidden rounded-lg shadow-lg bg-white mb-20 border">
+        <div class="p-4 flex flex-col md:flex-row items-center justify-between">
+            <div class="flex items-center mb-4 md:mb-0">
+                <label for="entries" class="text-gray-700 font-medium mr-2">แสดง</label>
+                <select id="entries"
+                    class="block w-auto bg-white border border-gray-300 hover:border-gray-400 px-3 py-2 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300">
+                    <option value="5" selected>5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+                <span class="ml-2 text-gray-700">รายการ</span>
+            </div>
+            <div class="flex items-center">
+                <label for="search" class="text-gray-700 font-medium mr-2">ค้นหา</label>
+                <input type="text" id="search"
+                    class="block w-full md:w-64 bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300"
+                    placeholder="พิมพ์เพื่อค้นหา">
+            </div>
+        </div>
+
+        <div class="mx-5 border rounded-lg overflow-hidden overflow-x-auto shadow-md">
+            <form method="post" onsubmit="return confirmRegistration(this);">
+            <!-- <form method="post" onsubmit="confirmRegistration(event)"> -->
+                {% csrf_token %}
+                <table id="example" class="w-full table-auto">
+                    <thead class="from-blue-600 via-blue-800 to-blue-500 bg-gradient-to-r text-white font-semibold">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm uppercase">
+                                <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)">
+                            </th>
+                            <th class="px-6 py-4 text-left text-sm uppercase">รหัสนักศึกษา</th>
+                            <th class="px-6 py-4 text-left text-sm uppercase">ชื่อ</th>
+                            <th class="px-6 py-4 text-left text-sm uppercase">นามสกุล</th>
+                            <th class="px-6 py-4 text-left text-sm uppercase">คณะ/สังกัด</th>
+                            <!-- <th class="px-6 py-4 text-left text-sm uppercase">ดาวน์โหลด</th>
+                        <th class="px-6 py-4 text-left text-sm uppercase">อนุมัติ</th>
+                        <th class="px-6 py-4 text-left text-sm uppercase">สถานะ</th> -->
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        
+                        {% for student_in_activity in students_in_activity %}
+                        <tr class="hover:bg-gray-50 border">
+                            <td class="px-6 py-4 text-sm text-gray-800">
+
+                                <input type="checkbox" name="student" value="{{ student_in_activity.user_student.id }}" 
+                                    {% if student_in_activity.is_approved %}checked{% endif%}>
+
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-800">
+                                <p class="text-gray-900 whitespace-no-wrap">
+                                    {{ student_in_activity.user_student.user.username }}
+                                </p>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-800">
+                                <p class="text-gray-900 whitespace-no-wrap">
+                                    {{student_in_activity.user_student.user.first_name }}
+                                </p>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-800">
+                                <p class="text-gray-900 whitespace-no-wrap">
+                                    {{student_in_activity.user_student.user.last_name }}
+                                </p>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-800">
+                                <p class="text-gray-900 whitespace-no-wrap">{{ student_in_activity.user_student.faculty}}
+                                </p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="submit"
+                    class="bg-gradient-to-b from-blue-400 via-blue-700 to-blue-500 text-white px-3 py-2 rounded-md  hover:scale-105 duration-200 m-10">ยืนยันการตรวจสอบรายชื่อนักศึกษาที่เข้าร่วมกิจกรรม</button>
+            </form>
+        </div>
+
+        <div id="custom-info" class="mt-4 text-gray-700 text-sm text-center font-medium bg-gray-50 py-2 rounded-lg ">
+            <!-- อัปเดตข้อมูลตรงนี้ผ่าน JS -->
+        </div>
+
+
+        <div id="custom-pagination" class="flex justify-between items-center mt-4 px-4 py-2">
+            <button id="prev-page"
+                class="border px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed">
+                ⏪️ ก่อนหน้า
+            </button>
+            <div id="page-numbers" class="flex space-x-2"></div>
+            <button id="next-page"
+                class="border px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed">
+                ถัดไป ⏩️
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    div.dataTables_length,
+    div.dataTables_paginate {
+        display: none !important;
+    }
+
+    div.dataTables_info {
+        display: none !important;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        const table = $('#example').DataTable({
+            responsive: true,
+            paging: true,
+            pageLength: 5,
+            language: {
+                search: "ค้นหา:",
+                info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                infoEmpty: "ไม่มีข้อมูลที่จะแสดง",
+                infoFiltered: "(กรองจากทั้งหมด _MAX_ รายการ)",
+                paginate: {
+                    first: "หน้าแรก",
+                    last: "หน้าสุดท้าย",
+                    next: "ถัดไป",
+                    previous: "ก่อนหน้า"
+                },
+                zeroRecords: "ไม่พบข้อมูลที่ค้นหา",
+            },
+            dom: 'lrtip', // ซ่อน pagination และ lengthMenu ของ DataTables
+        });
+
+        function updateCustomInfo() {
+            const pageInfo = table.page.info();
+            $('#custom-info').text(
+                `กำลังแสดง ${pageInfo.start + 1} ถึง ${pageInfo.end} จากทั้งหมด ${pageInfo.recordsDisplay} รายการ`
+            );
+        }
+
+        // Initial update
+        updateCustomInfo();
+
+        // Update custom pagination
+        function updatePagination() {
+            const pageInfo = table.page.info();
+            $('#page-numbers').empty();
+            for (let i = 0; i < pageInfo.pages; i++) {
+                $('#page-numbers').append(`
+                        <button data-page="${i}" class="px-4  py-2 rounded-md ${i === pageInfo.page
+                        ? 'bg-gradient-to-b from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-500 hover:bg-gradient-to-b text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }">
+                            ${i + 1}
+                        </button>
+                    `);
+            }
+            $('#pagination-info').text(`หน้า ${pageInfo.page + 1} จาก ${pageInfo.pages}`);
+            $('#prev-page').prop('disabled', pageInfo.page === 0);
+            $('#next-page').prop('disabled', pageInfo.page + 1 === pageInfo.pages);
+        }
+
+        // Initial pagination update
+        updatePagination();
+
+        // Custom pagination buttons
+        $('#prev-page').on('click', function () {
+            table.page('previous').draw('page');
+            updatePagination();
+        });
+
+        $('#next-page').on('click', function () {
+            table.page('next').draw('page');
+            updatePagination();
+        });
+
+        // Click page number
+        $('#page-numbers').on('click', 'button', function () {
+            const page = $(this).data('page');
+            table.page(page).draw('page');
+            updatePagination();
+        });
+
+        // Custom length menu behavior
+        $('#entries').on('change', function () {
+            table.page.len($(this).val()).draw();
+            updatePagination();
+        });
+
+        // Custom search behavior
+        $('#search').on('input', function () {
+            table.search($(this).val()).draw();
+        });
+
+        // facultyFilter เปลี่ยนประเภทกิจกรรม 
+        $('#facultyFilter').on('change', function () {
+            const selectedFaculty = $(this).val();
+            table.column(2).search(selectedFaculty).draw();
+        });
+
+        // ฟิลเตอร์ตามสถานะ
+        $('#statusFilter').on('change', function () {
+            const selectedStatus = $(this).val();
+            table.column(7).search(selectedStatus).draw();
+        });
+
+        table.on('draw', function () {
+            $('td.dataTables_empty').addClass('p-2');
+
+
+        });
+
+        function add_p2 () {
+            $('td.dataTables_empty').addClass('p-2');
+        };
+        add_p2();
+    });
+</script>

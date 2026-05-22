@@ -1,0 +1,262 @@
+{% load crispy_forms_tags %}
+
+<div class="min-h-screen w-full">
+    <div class="pt-24 px-8 p-6 ">
+        {% if messages %}
+        <div class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+            {% for message in messages %}
+            <p class="font-bold">{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <h1 class="text-2xl font-normal text-gray-900 mb-2 text-center">งานกิจกรรม</h1>
+    </div>
+
+    <div class="container mx-auto min-h-screen h-full flex-col justify-between p-2">
+        <!-- Filters -->
+        <div class="grid md:flex items-center gap-4 mb-6">
+            <!-- สถานะกิจกรรม -->
+            <div class="w-full">
+                <label for="statusFilter" class="block text-lg font-semibold text-gray-700 mb-2">สถานะกิจกรรม</label>
+                <select id="statusFilter"
+                    class="block w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300">
+                    <option value="">ทั้งหมด</option>
+                    <option value="เปิดรับสมัคร">เปิดรับสมัคร</option>
+                    <option value="ผู้ลงทะเบียนครบแล้ว">ผู้ลงทะเบียนครบแล้ว</option>
+                    <option value="ปิดรับสมัครแล้ว">ปิดรับสมัครแล้ว</option>
+                </select>
+            </div>
+
+            <!-- ประเภทกิจกรรม -->
+            <div class="w-full">
+                <label for="typeFilter" class="block text-lg font-semibold text-gray-700 mb-2">ประเภทกิจกรรม</label>
+                <select id="typeFilter"
+                    class="block w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300">
+                    <option value="">ทั้งหมด</option>
+                    {% for act in act_choices %}
+                    <option value="{{ act.0 }}">{{ act.0 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- ค้นหา -->
+            <div class="w-full">
+                <label for="search" class="block text-lg font-semibold text-gray-700 mb-2">ค้นหา</label>
+                <input type="text" id="search"
+                    class="block w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300"
+                    placeholder="ค้นหา...">
+            </div>
+        </div>
+
+        <!-- การตั้งค่าการแสดงผล -->
+        <div class="grid md:flex items-center md:justify-end gap-x-3 mb-2">
+            <!-- จำนวนรายการ -->
+            <div class="flex items-center py-2">
+                <label for="entries" class="text-gray-700 font-medium mr-2">แสดง</label>
+                <select id="entries"
+                    class="block w-full bg-white border border-gray-300 hover:border-gray-400 px-3 py-2 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300">
+                    <option value="5" selected>5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+                <span class="ml-2 text-gray-700">รายการ</span>
+            </div>
+            <!-- เรียงลำดับ -->
+            <div class="flex items-center py-2 text-nowrap">
+                <label for="sortOrder" class="text-gray-700 font-medium mr-2">เรียงลำดับ</label>
+                <select id="sortOrder"
+                    class="block w-full bg-white border border-gray-300 hover:border-gray-400 px-3 py-2 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300">
+                    <option value="desc">วันที่รับสมัครใหม่ไปเก่า</option>
+                    <option value="asc">วันที่รับสมัครเก่าไปใหม่</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Card Container -->
+        <div id="card-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {% for activity in activity_student %}
+            <div id="card-act"
+                class="flex flex-col items-center bg-white border rounded-lg shadow-xl transition duration-300 ease-in-out transform card"
+                data-status="{% if activity.registered_count >= activity.max_participants %}ผู้ลงทะเบียนครบแล้ว{% elif not activity.is_registration_open %}ปิดรับสมัครแล้ว{% else %}เปิดรับสมัคร{% endif %}"
+                data-type="{{ activity.activity_type }}" data-start-date="{{ activity.due_date_registration|date:'Y-m-d\\TH:i:s' }}"
+                data-act="{{ activity.activity_name }}">
+
+                <img src="{{ activity.img_activity.url }}" alt="media/activity/images"
+                    class="w-full h-72 object-cover rounded-t-lg cursor-pointer"
+                    onclick="window.location.href='activity_student/{{ activity.id }}/'" />
+                <p id="link-detail"
+                    class="text-center bg-opacity-60 text-white -mt-10 cursor-pointer duration-300 bg-slate-800 w-full p-2"
+                    onclick="window.location.href='activity_student/{{ activity.id }}/'">
+                    รายละเอียดเพิ่มเติม &raquo;</p>
+                <div class="my-4">
+                    <p class="text-xl font-semibold text-center cursor-pointer"
+                        onclick="window.location.href='activity_student/{{ activity.id }}/'"> กิจกรรม {{ activity.activity_name }}</p>
+                    <!-- <p class="text-sm">วันที่ {{ activity.start_date_activity }} - {{ activity.due_date_activity.time }} น.</p> -->
+
+                    <div class="mt-2">
+                        <p>วันที่ปิดรับสมัคร {{ activity.due_date_registration.date }}</p>
+                    </div>
+
+                    {% if activity.registered_count >= activity.max_participants %}
+                    <p class="text-red-500 text-center mt-2">จำนวนผู้ลงทะเบียนครบแล้ว</p>
+                    {% elif not activity.is_registration_open %}
+                    <p class="text-red-500 text-center mt-2">ปิดรับสมัครแล้ว</p>
+                    {% else %}
+
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <div id="custom-pagination" class="flex justify-center items-center mt-4 px-4 py-2">
+            <button id="prev-page"
+                class="border px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed">
+                ก่อนหน้า
+            </button>
+            <div id="page-numbers" class="flex gap-x-2 px-2"></div>
+            <button id="next-page"
+                class="border px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed">
+                ถัดไป
+            </button>
+        </div>
+    </div>
+
+    <style>
+        #link-detail {
+            display: block;
+            /* เพื่อให้องค์ประกอบพร้อม */
+            opacity: 0;
+            /* เริ่มต้นด้วยการซ่อน */
+            /* ย้ายลงเล็กน้อย */
+            transition: opacity 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                transform 350ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #card-act:hover #link-detail {
+            opacity: 1;
+            /* แสดงขึ้น */
+            transform: translateY(0);
+            /* ย้ายกลับมาในตำแหน่งเดิม */
+        }
+    </style>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const cards = Array.from(document.querySelectorAll('.card'));
+            const searchInput = document.getElementById('search');
+            const statusFilter = document.getElementById('statusFilter');
+            const typeFilter = document.getElementById('typeFilter');
+            const sortOrder = document.getElementById('sortOrder');
+            const paginationContainer = document.getElementById('page-numbers');
+            const prevPageButton = document.getElementById('prev-page');
+            const nextPageButton = document.getElementById('next-page');
+            const itemsPerPageSelect = document.getElementById('entries');
+            let itemsPerPage = parseInt(itemsPerPageSelect.value, 10);
+            let currentPage = 1;
+
+            function renderCards() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedStatus = statusFilter.value;
+                const selectedType = typeFilter.value;
+                const selectedSortOrder = sortOrder.value;
+
+                // Filter Cards
+                let filteredCards = cards.filter(card => {
+                    const status = card.getAttribute('data-status');
+                    const type = card.getAttribute('data-type');
+                    const title = card.getAttribute('data-act').toLowerCase();
+                    return (
+                        (!selectedStatus || status === selectedStatus) &&
+                        (!selectedType || type === selectedType) &&
+                        (!searchTerm || title.includes(searchTerm))
+                    );
+                });
+
+                // Sort Cards
+                if (selectedSortOrder === 'asc') {
+                    filteredCards.sort((a, b) => new Date(a.getAttribute('data-start-date')) - new Date(b.getAttribute('data-start-date')));
+                } else if (selectedSortOrder === 'desc') {
+                    filteredCards.sort((a, b) => new Date(b.getAttribute('data-start-date')) - new Date(a.getAttribute('data-start-date')));
+                }
+
+                // Pagination
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const paginatedCards = filteredCards.slice(startIndex, startIndex + itemsPerPage);
+
+                // Render Cards
+                const cardContainer = document.getElementById('card-container');
+                cardContainer.innerHTML = '';
+                paginatedCards.forEach(card => cardContainer.appendChild(card));
+
+                updatePagination(filteredCards.length);
+            }
+
+            function updatePagination(totalItems) {
+                const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+                paginationContainer.innerHTML = '';
+                for (let i = 1; i <= totalPages; i++) {
+                    const button = document.createElement('button');
+                    button.textContent = i;
+                    button.className = `px-4 py-2 mx-1 rounded ${i === currentPage ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`;
+                    button.onclick = () => {
+                        currentPage = i;
+                        renderCards();
+                    };
+                    paginationContainer.appendChild(button);
+                }
+
+                prevPageButton.disabled = currentPage === 1;
+                nextPageButton.disabled = currentPage === totalPages;
+            }
+
+            // Event Listeners
+            searchInput.addEventListener('input', () => {
+                currentPage = 1;
+                renderCards();
+            });
+
+            statusFilter.addEventListener('change', () => {
+                currentPage = 1;
+                renderCards();
+            });
+
+            typeFilter.addEventListener('change', () => {
+                currentPage = 1;
+                renderCards();
+            });
+
+            itemsPerPageSelect.addEventListener('change', () => {
+                itemsPerPage = parseInt(itemsPerPageSelect.value, 10);
+                currentPage = 1;
+                renderCards();
+            });
+
+            sortOrder.addEventListener('change', () => {
+                currentPage = 1;
+                renderCards();
+            });
+
+            prevPageButton.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderCards();
+                }
+            };
+
+            nextPageButton.onclick = () => {
+                if (currentPage < Math.ceil(cards.length / itemsPerPage)) {
+                    currentPage++;
+                    renderCards();
+                }
+            };
+
+            renderCards();
+        });
+    </script>
+
+</div>

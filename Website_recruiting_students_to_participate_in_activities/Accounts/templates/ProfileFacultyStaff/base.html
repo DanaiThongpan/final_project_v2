@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบรับสมัครนักศึกษาเข้าร่วมกิจกรรม</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="https://training.ubu.ac.th/assets/img/ubu_logo.png" sizes="32x32" type="image/png">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'slide-in-left': 'slide-in-left 0.7s ease-out forwards',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'slide-in-left': {
+                            '0%': { transform: 'translateX(-100%)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' },
+                        },
+                    }
+                }
+            }
+        }
+        
+        function setupDropdown(buttonId, menuId) {
+            const button = document.getElementById(buttonId);
+            const menu = document.getElementById(menuId);
+    
+            button.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+    
+            document.addEventListener('click', (event) => {
+                if (!button.contains(event.target) && !menu.contains(event.target)) {
+                    menu.classList.add('hidden');
+                }
+            });
+        }
+    
+        document.addEventListener('DOMContentLoaded', () => {
+            setupDropdown('notificationDropdown', 'notificationMenu');
+            setupDropdown('userDropdown', 'userMenu');
+
+            const header = document.querySelector("header");
+    
+            // ฟังก์ชันตรวจสอบการเลื่อนหน้าจอ
+            function checkScroll() {
+                if (window.scrollY > 0) {
+                    header.classList.add("shadow-md");
+                } else {
+                    header.classList.remove("shadow-md");
+                }
+            }
+    
+            // ตรวจสอบการเลื่อนหน้าจอเมื่อโหลดหน้าเว็บ
+            checkScroll();
+    
+            // ตรวจสอบการเลื่อนหน้าจอทุกครั้งที่มีการเลื่อน
+            window.addEventListener("scroll", checkScroll);
+        });
+    </script>
+</head>
+<body>
+    {% include 'FacultyStaff/topbar.html' %}
+
+    {% block content %} 
+    
+    {% endblock %} 
+
+    {% include 'FacultyStaff/footer.html' %}
+</body>
+</html>

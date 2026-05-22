@@ -1,0 +1,307 @@
+{% load crispy_forms_tags %}
+
+<div class="min-h-screen w-full">
+    <div class="pt-24 px-8 p-6 ">
+        {% if messages %}
+        <div class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3 rounded mb-4" role="alert">
+            {% for message in messages %}
+            <p class="font-bold">{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <h1 class="text-2xl font-bold text-gray-900 mb-6 text-center">ประวัติการเข้าร่วมกิจกรรม</h1>
+    </div>
+
+    <div class="container mx-auto min-h-screen h-full flex-col justify-between p-2">
+        <!-- Filters (สถานะกิจกรรมถูกตัดออก เนื่องจากไม่เกี่ยวข้องกับประวัติ) -->
+        <div class="grid md:flex items-center gap-4 mb-6">
+            
+            <!-- ประเภทกิจกรรม -->
+            <div class="w-full md:w-1/3">
+                <label for="typeFilter" class="block text-lg font-semibold text-gray-700 mb-2">ประเภทกิจกรรม</label>
+                <select id="typeFilter"
+                    class="block w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300">
+                    <option value="">ทั้งหมด</option>
+                    {% for act in act_choices %}
+                    <option value="{{ act.0 }}">{{ act.0 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- ค้นหา -->
+            <div class="w-full md:w-2/3">
+                <label for="search" class="block text-lg font-semibold text-gray-700 mb-2">ค้นหา</label>
+                <input type="text" id="search"
+                    class="block w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300"
+                    placeholder="ค้นหาชื่อกิจกรรม...">
+            </div>
+        </div>
+
+        <!-- การตั้งค่าการแสดงผล -->
+        <div class="grid md:flex items-center md:justify-between gap-x-3 mb-4">
+            <div id="no-results-message" class="text-red-500 font-medium hidden">ไม่พบประวัติการเข้าร่วมกิจกรรมตามเงื่อนไขที่เลือก</div>
+
+            <div class="flex items-center py-2 gap-x-6">
+                <!-- จำนวนรายการ -->
+                <div class="flex items-center">
+                    <label for="entries" class="text-gray-700 font-medium mr-2">แสดง</label>
+                    <select id="entries"
+                        class="block w-auto bg-white border border-gray-300 hover:border-gray-400 px-3 py-2 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300">
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                    </select>
+                    <span class="ml-2 text-gray-700">รายการ</span>
+                </div>
+                <!-- เรียงลำดับ -->
+                <div class="flex items-center py-2 text-nowrap">
+                    <label for="sortOrder" class="text-gray-700 font-medium mr-2">เรียงตาม</label>
+                    <select id="sortOrder"
+                        class="block w-auto bg-white border border-gray-300 hover:border-gray-400 px-3 py-2 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300">
+                        <option value="desc">วันที่เข้าร่วม (ใหม่ไปเก่า)</option>
+                        <option value="asc">วันที่เข้าร่วม (เก่าไปใหม่)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Table -->
+        <div class="overflow-x-auto bg-white rounded-lg shadow-lg border border-gray-200">
+            <table class="w-full table-auto border-collapse">
+                <thead class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                    <tr>
+                        <th class="py-3 px-6 text-left">ชื่อกิจกรรม</th>
+                        <th class="py-3 px-6 text-center">ประเภท</th>
+                        <th class="py-3 px-6 text-center">วันที่เข้าร่วม</th>
+                        <th class="py-3 px-6 text-center">สถานะโครงการ</th>
+                        <th class="py-3 px-6 text-center">ผลการเข้าร่วม</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600 text-sm font-light" id="history-table-body">
+                    {% for activity in activity_student_history %}
+                    <!-- KEY: ใส่ data-attributes สำหรับ JS filtering/sorting -->
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 history-row" 
+                        data-type="{{ activity.activity.activity_type }}"
+                        data-name="{{ activity.activity.activity_name }}"
+                        data-date="{{ activity.registered_at|date:'Y-m-d\TH:i:s' }}">
+                        
+                        <!-- ชื่อกิจกรรม -->
+                        <td class="py-3 px-6 text-left whitespace-nowrap font-medium text-gray-900">
+                            {{ activity.activity.activity_name }}
+                        </td>
+                        <!-- ประเภทกิจกรรม -->
+                        <td class="py-3 px-6 text-center">
+                             <span class="bg-blue-100 text-blue-600 py-1 px-3 rounded-full text-xs">
+                                {{ activity.activity.activity_type|truncatechars:20 }}
+                            </span>
+                        </td>
+                        <!-- วันที่เข้าร่วม -->
+                        <td class="py-3 px-6 text-center whitespace-nowrap">
+                            {{ activity.registered_at|date:"d M Y" }}
+                        </td>
+
+                        <!-- สถานะโครงการ -->
+                        <td class="py-3 px-6 text-center">
+                            {% if activity.activity.is_approved %}
+                                <span class="inline-flex px-3 py-1 text-xs font-semibold leading-5 text-green-800 bg-green-100 rounded-full">
+                                    อนุมัติแล้ว
+                                </span>
+                            {% else %}
+                                <span class="inline-flex px-3 py-1 text-xs font-semibold leading-5 text-yellow-800 bg-yellow-100 rounded-full">
+                                    รออนุมัติ
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- ผลการเข้าร่วม -->
+                        <td class="py-3 px-6 text-center">
+                            {% if not activity.activity.is_approved %}
+                                <span class="text-gray-400 text-xs">รอโครงการอนุมัติ</span>
+                            {% elif activity.is_approved %}
+                                <span class="inline-flex px-3 py-1 text-xs font-semibold leading-5 text-green-800 bg-green-200 rounded-full">
+                                    ผ่าน (ได้รับหน่วยกิต)
+                                </span>
+                            {% else %}
+                                <span class="inline-flex px-3 py-1 text-xs font-semibold leading-5 text-orange-800 bg-orange-200 rounded-full">
+                                    ไม่ผ่าน (ไม่ได้รับหน่วยกิต)
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr id="initial-empty-row">
+                        <td colspan="5" class="py-6 text-center text-gray-500">ยังไม่มีประวัติการเข้าร่วมกิจกรรม</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div id="custom-pagination" class="flex justify-center items-center mt-4 px-4 py-2">
+            <button id="prev-page"
+                class="border px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed">
+                &laquo; ก่อนหน้า
+            </button>
+            <div id="page-numbers" class="flex gap-x-2 px-2"></div>
+            <button id="next-page"
+                class="border px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed">
+                ถัดไป &raquo;
+            </button>
+        </div>
+    </div>
+
+    <!-- ลบ Style และ Script ที่ไม่เกี่ยวข้องกับตาราง -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // ดึงแถวตารางทั้งหมด
+            const tableBody = document.getElementById('history-table-body');
+            const rows = Array.from(document.querySelectorAll('.history-row'));
+            const initialEmptyRow = document.getElementById('initial-empty-row'); // แถวสำหรับ 'ยังไม่มีประวัติ'
+
+            const searchInput = document.getElementById('search');
+            // const statusFilter = document.getElementById('statusFilter'); // ลบออก เนื่องจากสถานะถูกแทนที่ด้วยผลการเข้าร่วม
+            const typeFilter = document.getElementById('typeFilter');
+            const sortOrder = document.getElementById('sortOrder');
+            const paginationContainer = document.getElementById('page-numbers');
+            const prevPageButton = document.getElementById('prev-page');
+            const nextPageButton = document.getElementById('next-page');
+            const itemsPerPageSelect = document.getElementById('entries');
+            const noResultsMessage = document.getElementById('no-results-message');
+
+            let itemsPerPage = parseInt(itemsPerPageSelect.value, 10);
+            let currentPage = 1;
+
+            // ฟังก์ชันหลักในการกรอง, เรียง, และแบ่งหน้า
+            function updateDisplay() {
+                const searchTerm = searchInput.value.toLowerCase();
+                // const selectedStatus = statusFilter.value; // ไม่ใช้
+                const selectedType = typeFilter.value;
+                const selectedSortOrder = sortOrder.value;
+
+                // 1. Filter Rows
+                let filteredRows = rows.filter(row => {
+                    const type = row.getAttribute('data-type');
+                    const name = row.getAttribute('data-name').toLowerCase();
+                    // const status = row.getAttribute('data-outcome'); // ถ้าอยากกรองสถานะผลลัพธ์
+                    
+                    return (
+                        // (!selectedStatus || status === selectedStatus) &&
+                        (!selectedType || type === selectedType) &&
+                        (!searchTerm || name.includes(searchTerm))
+                    );
+                });
+                
+                // 2. Handle No Results
+                if (filteredRows.length === 0) {
+                    noResultsMessage.classList.remove('hidden');
+                    tableBody.innerHTML = ''; // เคลียร์ตาราง
+                    updatePagination(0);
+                    return;
+                } else {
+                    noResultsMessage.classList.add('hidden');
+                }
+
+                // 3. Sort Rows (เรียงตามวันที่เข้าร่วม)
+                filteredRows.sort((a, b) => {
+                    const dateA = new Date(a.getAttribute('data-date'));
+                    const dateB = new Date(b.getAttribute('data-date'));
+
+                    if (selectedSortOrder === 'asc') {
+                        return dateA - dateB;
+                    } else { // 'desc'
+                        return dateB - dateA;
+                    }
+                });
+
+                // 4. Pagination
+                const totalItems = filteredRows.length;
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const paginatedRows = filteredRows.slice(startIndex, startIndex + itemsPerPage);
+
+                // 5. Render Rows (แสดงเฉพาะหน้าที่ถูกแบ่งแล้ว)
+                tableBody.innerHTML = '';
+                paginatedRows.forEach(row => tableBody.appendChild(row));
+
+                updatePagination(totalItems);
+            }
+
+            function updatePagination(totalItems) {
+                const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+                paginationContainer.innerHTML = '';
+                
+                // ไม่ต้องสร้างปุ่มถ้ามีหน้าเดียวหรือไม่มีข้อมูล
+                if (totalPages <= 1 && totalItems > 0) {
+                    prevPageButton.disabled = true;
+                    nextPageButton.disabled = true;
+                    paginationContainer.innerHTML = `<span class="px-4 py-2 mx-1 rounded bg-blue-500 text-white">1</span>`;
+                    return;
+                } else if (totalItems === 0) {
+                    prevPageButton.disabled = true;
+                    nextPageButton.disabled = true;
+                    return;
+                }
+
+                for (let i = 1; i <= totalPages; i++) {
+                    const button = document.createElement('button');
+                    button.textContent = i;
+                    button.className = `px-4 py-2 mx-1 rounded ${i === currentPage ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`;
+                    button.onclick = () => {
+                        currentPage = i;
+                        updateDisplay();
+                    };
+                    paginationContainer.appendChild(button);
+                }
+
+                prevPageButton.disabled = currentPage === 1;
+                nextPageButton.disabled = currentPage === totalPages;
+            }
+
+            // Event Listeners
+            // searchInput.addEventListener('input', () => { currentPage = 1; updateDisplay(); }); // ใช้ debounce ใน production
+            searchInput.addEventListener('keyup', () => { currentPage = 1; updateDisplay(); });
+
+            // statusFilter.addEventListener('change', () => { currentPage = 1; updateDisplay(); }); // ไม่ใช้
+            
+            typeFilter.addEventListener('change', () => { currentPage = 1; updateDisplay(); });
+
+            itemsPerPageSelect.addEventListener('change', () => {
+                itemsPerPage = parseInt(itemsPerPageSelect.value, 10);
+                currentPage = 1;
+                updateDisplay();
+            });
+
+            sortOrder.addEventListener('change', () => {
+                currentPage = 1; // ไม่จำเป็นต้องรีเซ็ตหน้าเสมอไป แต่ทำเพื่อความง่าย
+                updateDisplay();
+            });
+
+            prevPageButton.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updateDisplay();
+                }
+            };
+
+            nextPageButton.onclick = () => {
+                const totalPages = Math.ceil(rows.length / itemsPerPage); // ต้องหา totalItems จาก filteredRows จริง
+                // ต้องมี Logic การคำนวณ filteredRows.length ใน updateDisplay() 
+                
+                // สำหรับ next button, เราจะพึ่งพา totalPages ที่คำนวณใน updateDisplay() รอบล่าสุด
+                if (currentPage < totalPages) { 
+                    currentPage++;
+                    updateDisplay();
+                }
+            };
+
+            // Initial Render
+            if (initialEmptyRow) {
+                // ถ้ามีแถว empty แสดงว่าไม่มีข้อมูลเลย ไม่ต้องทำอะไร
+            } else {
+                updateDisplay();
+            }
+        });
+    </script>
+</div>

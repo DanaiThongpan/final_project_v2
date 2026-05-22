@@ -1,0 +1,297 @@
+{% load crispy_forms_tags %}
+
+<main class="flex flex-col md:flex-row justify-center md:justify-between items-center px-4 md:px-20 py-10 pt-24 min-h-screen">
+    
+    <div class="hidden md:block w-72 mr-10">
+        <img src="https://static.vecteezy.com/system/resources/previews/034/057/207/original/resume-icon-icon-for-web-design-isolated-on-white-background-vector.jpg"
+             alt="Training Illustration"
+             class="w-full h-full animate-float">
+    </div>
+    
+    <div class="max-w-4xl w-full bg-white p-8 shadow-2xl rounded-lg animate-slide-in-left">
+
+        <h1 class="text-center text-3xl font-bold mb-6 text-gray-800">
+            ข้อมูลส่วนตัว
+        </h1>
+
+        <!-- ข้อมูลพื้นฐาน -->
+        <div class="space-y-3 mb-6">
+            <label class="block text-xl font-medium">
+                รหัสนักศึกษา :
+                <span class="text-gray-500 font-normal">
+                    {{ user.username }}
+                </span>
+            </label>
+
+            <label class="block text-xl font-medium">
+                ชื่อ-สกุล :
+                <span class="text-gray-500 font-normal">
+                    {{ user_student.title }}
+                    {{ user.first_name }}
+                    {{ user.last_name }}
+                </span>
+            </label>
+
+            <label class="block text-xl font-medium">
+                อีเมล :
+                <span class="text-gray-500 font-normal">
+                    {{ user.email }}
+                </span>
+            </label>
+
+            <label class="block text-xl font-medium">
+                คณะ :
+                <span class="text-gray-500 font-normal">
+                    {{ user_student.faculty }}
+                </span>
+            </label>
+
+            <label class="block text-xl font-medium">
+                ชั้นปี :
+                <span class="text-gray-500 font-normal">
+                    {{ user_student.current_year }}
+                </span>
+            </label>
+
+            <label class="block text-xl font-medium">
+                ประเภท (ทุน / กยศ) :
+                <span class="text-gray-500 font-normal">
+                    {{ user_student.type_scholarship }}
+                </span>
+            </label>
+        </div>
+
+        <!-- เลือกปี พ.ศ. -->
+        <div class="mb-6">
+            <label class="block text-lg font-semibold text-gray-700 mb-1">
+                เลือกปีการศึกษา (พ.ศ.)
+            </label>
+            <select id="yearFilter"
+                class="w-64 rounded-lg border-gray-300 shadow-sm
+                       focus:ring-blue-200 focus:border-blue-500">
+                {% for y in academic_years %}
+                    <option value="{{ y }}">{{ y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- ข้อมูลหน่วยกิต -->
+        <div class="border-t border-gray-200 pt-4 mt-4 space-y-6">
+            <h2 class="text-xl font-semibold text-gray-700">
+                ข้อมูลหน่วยกิตสะสม
+            </h2>
+
+            {% for credit in user_student.StudentYearlyActivityCredit.all %}
+            <div class="credit-year space-y-3" data-year="{{ credit.academic_year }}">
+
+                <!-- ด้านที่ 1 -->
+                {% with req=credit.required_credits_category_1 avail=credit.earned_credits_category_1 %}
+                {% widthratio avail req 100 as percent %}
+                <div class="grid md:grid-cols-3 gap-2 p-3 rounded-lg border
+                            {% if avail >= req %}bg-green-50{% else %}bg-red-50{% endif %}">
+
+                    <!-- ชื่อด้าน -->
+                    <div class="md:col-span-2">
+                        <p class="font-medium">
+                            1 ด้านวิชาการที่ส่งเสริมคุณลักษณะบัณฑิตที่พึงประสงค์ (ต้องการ {{ req }})
+                        </p>
+
+                        <!-- แท่งแสดงผล -->
+                        <div class="w-full h-3 bg-gray-200 rounded-full mt-2 overflow-hidden">
+                            <div class="h-full {% if avail >= req %} bg-green-500 {% else %} bg-red-500 {% endif %}"
+                                style="width: {{ percent }}%;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- สถานะ -->
+                    <div class="text-center flex flex-col justify-center">
+                        <p>มี {{ avail }}</p>
+                        {% if avail >= req %}
+                            <span class="mt-1 px-3 py-1 text-sm bg-green-200 text-green-800 rounded-full">
+                                PASS
+                            </span>
+                        {% else %}
+                            <span class="mt-1 px-3 py-1 text-sm bg-red-200 text-red-800 rounded-full">
+                                FAIL
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endwith %}
+
+                <!-- ด้านที่ 2 -->
+                {% with req=credit.required_credits_category_2 avail=credit.earned_credits_category_2 %}
+                {% widthratio avail req 100 as percent %}
+                <div class="grid md:grid-cols-3 gap-2 p-3 rounded-lg border
+                            {% if avail >= req %}bg-green-50{% else %}bg-red-50{% endif %}">
+
+                    <div class="md:col-span-2">
+                        <p class="font-medium">2 ด้านกีฬาหรือการส่งเสริมสุขภาพ (ต้องการ {{ req }})</p>
+
+                        <div class="w-full h-3 bg-gray-200 rounded-full mt-2 overflow-hidden">
+                            <div class="h-full {% if avail >= req %}bg-green-500{% else %}bg-red-500{% endif %}"
+                                style="width: {{ percent }}%;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center flex flex-col justify-center">
+                        <p>มี {{ avail }}</p>
+                        {% if avail >= req %}
+                            <span class="mt-1 px-3 py-1 text-sm bg-green-200 text-green-800 rounded-full">PASS</span>
+                        {% else %}
+                            <span class="mt-1 px-3 py-1 text-sm bg-red-200 text-red-800 rounded-full">FAIL</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endwith %}
+
+                <!-- ด้านที่ 3 -->
+                {% with req=credit.required_credits_category_3 avail=credit.earned_credits_category_3 %}
+                {% widthratio avail req 100 as percent %}
+                <div class="grid md:grid-cols-3 gap-2 p-3 rounded-lg border
+                            {% if avail >= req %}bg-green-50{% else %}bg-red-50{% endif %}">
+
+                    <div class="md:col-span-2">
+                        <p class="font-medium">3 ด้านบำเพ็ญประโยชน์หรือรักษาสิ่งแวดล้อม (ต้องการ {{ req }})</p>
+
+                        <div class="w-full h-3 bg-gray-200 rounded-full mt-2 overflow-hidden">
+                            <div class="h-full {% if avail >= req %}bg-green-500{% else %}bg-red-500{% endif %}"
+                                style="width: {{ percent }}%;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center flex flex-col justify-center">
+                        <p>มี {{ avail }}</p>
+                        {% if avail >= req %}
+                            <span class="mt-1 px-3 py-1 text-sm bg-green-200 text-green-800 rounded-full">PASS</span>
+                        {% else %}
+                            <span class="mt-1 px-3 py-1 text-sm bg-red-200 text-red-800 rounded-full">FAIL</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endwith %}
+
+                <!-- ด้านที่ 4 -->
+                {% with req=credit.required_credits_category_4 avail=credit.earned_credits_category_4 %}
+                {% widthratio avail req 100 as percent %}
+                <div class="grid md:grid-cols-3 gap-2 p-3 rounded-lg border
+                            {% if avail >= req %}bg-green-50{% else %}bg-red-50{% endif %}">
+
+                    <div class="md:col-span-2">
+                        <p class="font-medium">4 ด้านเสริมสร้างคุณธรรมและจริยธรรม (ต้องการ {{ req }})</p>
+
+                        <div class="w-full h-3 bg-gray-200 rounded-full mt-2 overflow-hidden">
+                            <div class="h-full {% if avail >= req %}bg-green-500{% else %}bg-red-500{% endif %}"
+                                style="width: {{ percent }}%;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center flex flex-col justify-center">
+                        <p>มี {{ avail }}</p>
+                        {% if avail >= req %}
+                            <span class="mt-1 px-3 py-1 text-sm bg-green-200 text-green-800 rounded-full">PASS</span>
+                        {% else %}
+                            <span class="mt-1 px-3 py-1 text-sm bg-red-200 text-red-800 rounded-full">FAIL</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endwith %}
+
+                <!-- ด้านที่ 5 -->
+                {% with req=credit.required_credits_category_5 avail=credit.earned_credits_category_5 %}
+                {% widthratio avail req 100 as percent %}
+                <div class="grid md:grid-cols-3 gap-2 p-3 rounded-lg border
+                            {% if avail >= req %}bg-green-50{% else %}bg-red-50{% endif %}">
+
+                    <div class="md:col-span-2">
+                        <p class="font-medium">5 ด้านส่งเสริมศิลปะและวัฒนธรรม (ต้องการ {{ req }})</p>
+
+                        <div class="w-full h-3 bg-gray-200 rounded-full mt-2 overflow-hidden">
+                            <div class="h-full {% if avail >= req %}bg-green-500{% else %}bg-red-500{% endif %}"
+                                style="width: {{ percent }}%;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center flex flex-col justify-center">
+                        <p>มี {{ avail }}</p>
+                        {% if avail >= req %}
+                            <span class="mt-1 px-3 py-1 text-sm bg-green-200 text-green-800 rounded-full">PASS</span>
+                        {% else %}
+                            <span class="mt-1 px-3 py-1 text-sm bg-red-200 text-red-800 rounded-full">FAIL</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endwith %}
+
+                <!-- ด้านที่ 6 -->
+                {% with req=credit.required_credits_category_6 avail=credit.earned_credits_category_6 %}
+                {% widthratio avail req 100 as percent %}
+                <div class="grid md:grid-cols-3 gap-2 p-3 rounded-lg border
+                            {% if avail >= req %}bg-green-50{% else %}bg-red-50{% endif %}">
+
+                    <div class="md:col-span-2">
+                        <p class="font-medium">6 ด้านกิจกรรมอื่น ๆ (ต้องการ {{ req }})</p>
+
+                        <div class="w-full h-3 bg-gray-200 rounded-full mt-2 overflow-hidden">
+                            <div class="h-full {% if avail >= req %}bg-green-500{% else %}bg-red-500{% endif %}"
+                                style="width: {{ percent }}%;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center flex flex-col justify-center">
+                        <p>มี {{ avail }}</p>
+                        {% if avail >= req %}
+                            <span class="mt-1 px-3 py-1 text-sm bg-green-200 text-green-800 rounded-full">PASS</span>
+                        {% else %}
+                            <span class="mt-1 px-3 py-1 text-sm bg-red-200 text-red-800 rounded-full">FAIL</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endwith %}
+
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-6">
+            <a href="/Accounts/updateprofile_Student/{{ user_student.id }}/"
+                class="inline-block px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-150">
+                แก้ไขข้อมูลส่วนตัว
+            </a>
+                    <div class="text-center mt-6">
+            <a href="/Accounts/profile_Student_Credit/{{ user_student.id }}/".
+                class="inline-block px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-150">
+                บันทึกข้อมูลหน่วยกิต
+            </a>
+        </div>
+
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const select = document.getElementById('yearFilter');
+    const blocks = document.querySelectorAll('.credit-year');
+
+    function filterYear() {
+        const selectedYear = select.value;
+        blocks.forEach(block => {
+            if (block.dataset.year === selectedYear) {
+                block.classList.remove('hidden');
+            } else {
+                block.classList.add('hidden');
+            }
+        });
+    }
+
+    blocks.forEach(block => block.classList.add('hidden'));
+    filterYear();
+    select.addEventListener('change', filterYear);
+});
+</script>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Viewer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 h-screen w-screen m-0 p-0">
+    <div class="flex items-center justify-center h-full">
+        <iframe 
+            src="data:application/pdf;base64,{{ pdf_base64 }}" 
+            class="w-full h-full border-0"
+        ></iframe>
+    </div>
+</body>
+</html>

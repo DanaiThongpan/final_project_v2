@@ -1,0 +1,312 @@
+<div class="pt-24 px-8 p-6 lg:mt-0 mt-20"></div>
+<h1 class="text-2xl font-normal text-gray-900 mb-6 text-center">กิจกรรมที่ประกาศ</h1>
+</div>
+<!-- component -->
+<div class="container mx-auto">
+    <!-- Filters -->
+    <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
+        <div>
+            <label for="facultyFilter" class="block text-lg font-semibold text-gray-700 mb-2">เลือกประเภทกิจกรรม</label>
+            <select id="facultyFilter"
+                class="block w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300">
+                <option value="">ทั้งหมด</option>
+                {% for fs in act_choices %}
+                <option value="{{fs.0}}">{{fs.0}}</option>
+                {% endfor %}
+                <!-- <option value="บริหารธุรกิจ">บริหารธุรกิจ</option>
+                <option value="วิทยาศาสตร์">วิทยาศาสตร์</option> -->
+            </select>
+        </div>
+        <div>
+            <label for="statusFilter" class="block text-lg font-semibold text-gray-700 mb-2">เลือกสถานะ</label>
+            <select id="statusFilter"
+                class="block w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300">
+                <option value="">ทั้งหมด</option>
+                <option value="อนุมัติแล้ว">อนุมัติแล้ว</option>
+                <option value="ยังไม่อนุมัติ">ยังไม่อนุมัติ</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- DataTable -->
+    <div class="overflow-hidden rounded-lg shadow-lg bg-white mb-20 border">
+        <div class="p-4 flex flex-col md:flex-row items-center justify-between">
+            <!-- จำนวนรายการต่อหน้า -->
+            <div class="flex items-center mb-4 md:mb-0">
+                <label for="entries" class="text-gray-700 font-medium mr-2">แสดง</label>
+                <select id="entries"
+                    class="block w-auto bg-white border border-gray-300 hover:border-gray-400 px-3 py-2 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300">
+                    <option value="5" selected>5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+                <span class="ml-2 text-gray-700">รายการ</span>
+            </div>
+
+            <!-- ช่องค้นหา -->
+            <div class="flex items-center">
+                <label for="search" class="text-gray-700 font-medium mr-2">ค้นหา</label>
+                <input type="text" id="search"
+                    class="block w-full md:w-64 bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300"
+                    placeholder="พิมพ์เพื่อค้นหา">
+            </div>
+        </div>
+
+        <div class="mx-5 border rounded-lg overflow-hidden overflow-x-auto shadow-md">
+            <table id="example" class="w-full table-auto text-nowrap">
+                <thead class="from-blue-600 via-blue-800 to-blue-500 bg-gradient-to-r text-white font-semibold">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-sm uppercase">รูปกิจกรรม</th>
+                        <th class="px-6 py-4 text-left text-sm uppercase">ชื่อกิจกรรม</th>
+                        <th class="px-6 py-4 text-center text-sm uppercase">ประเภทกิจกรรม</th>
+                        <!-- <th class="px-6 py-4 text-left text-sm uppercase">จำนวนรับทั้งหมด</th>
+                        <th class="px-6 py-4 text-left text-sm uppercase">จำนวนผู้ลงทะเบียน</th> -->
+                        <th class="px-6 py-4 text-left text-sm uppercase">เอกสาร</th>
+                        <th class="px-6 py-4 text-left text-sm uppercase">เอกสารลงชื่อ</th>
+                        <th class="px-6 py-4 text-left text-sm uppercase">จัดการ</th>
+                        <th class="px-6 py-4 text-left text-sm uppercase">ส่งเอกสาร</th>
+                        <th class="px-6 py-4 text-left text-sm uppercase">สถานะ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for activity in activity_person_responsible %}
+                    <tr class="hover:bg-gray-50 border">
+                        <td class="px-6 py-4 text-sm text-gray-800">
+                            {% if activity.img_activity %}
+                            <img src="{{ activity.img_activity.url }}" alt="Activity Image"
+                                class="w-16 h-16 object-cover border rounded-lg shadow">
+                            {% else %}
+                            <span>ไม่มีรูปภาพ</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-800">
+                            <p class="text-gray-900 whitespace-no-wrap">{{ activity.activity_name }}</p>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-800">
+                            <p class="text-gray-900 whitespace-no-wrap">{{ activity.activity_type }}</p>
+                        </td>
+                        <!-- <td class="px-6 py-4 text-sm text-gray-800">
+                            <p class="text-gray-900 whitespace-no-wrap">{{ activity.max_participants}}
+                            </p>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-800">
+                            <p class="text-gray-900 whitespace-no-wrap">{{ activity.registered_count }}
+                            </p>
+                        </td> -->
+
+                        <td class="px-6 py-4 text-sm text-gray-800">
+                            <a href="generate_pdf_registration_form_FacultyStaff/{{ activity.id }}/" target="_blank"><svg
+                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="lucide lucide-file-down">
+                                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                                    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                                    <path d="M12 18v-6" />
+                                    <path d="m9 15 3 3 3-3" />
+                                </svg></a>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-800">
+                            <a href="generate_pdf_sign_up_form_FacultyStaff/{{ activity.id }}/" target="_blank"><svg xmlns="http://www.w3.org/2000/svg"
+                                    width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                    class="lucide lucide-file-down">
+                                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                                    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                                    <path d="M12 18v-6" />
+                                    <path d="m9 15 3 3 3-3" />
+                                </svg></a>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-800 text-nowrap">
+                            <a href="{% url 'check_student_list_FacultyStaff' activity.id %}"
+                                class="bg-gradient-to-b from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-500 hover:bg-gradient-to-b text-white px-3 py-2 rounded-md  ">ตรวจสอบรายชื่อ</a><br>
+                            <br>
+                            <span class="text-yellow-500 flex justify-center">
+                                <a href="update_activity_FacultyStaff/{{ activity.id }}/">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-700 mx-2"
+                                        viewBox="0 0 20 20" fill="currentColor">
+                                        <path
+                                            d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                                        <path fill-rule="evenodd"
+                                            d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                                <a href="delete_activity_FacultyStaff/{{ activity.id }}/">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-700"
+                                        viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                            </span>
+                        </td>
+
+                        <td class="px-6 py-4 text-sm text-nowrap">
+                            {% if activity.ActivityPdf.all %}
+                            <!-- ลิงก์เพื่อดาวน์โหลด PDF -->
+                            <a href="{{ activity.ActivityPdf.first.pdf_file.url }}" target="_blank"
+                                class="bg-gradient-to-b from-green-400 to-green-600 hover:from-green-300 hover:to-green-400 hover:bg-gradient-to-b text-white px-3 py-2 rounded-md ">ดาวน์โหลด
+                                PDF</a>
+                            <br>
+                            <br>
+                            <a href="{% url 'delete_pdf_FacultyStaff' activity.ActivityPdf.first.id %}"
+                                class="bg-gradient-to-b from-red-400 to-red-600 hover:from-red-300 hover:to-red-400 hover:bg-gradient-to-b text-white px-3 py-2 rounded-md">ลบ</a>
+
+                            {% else %}
+                            <!-- ฟอร์มอัปโหลดไฟล์ PDF หากยังไม่ได้อัปโหลด -->
+                            <form method="post" enctype="multipart/form-data" action="{% url 'upload_pdf_FacultyStaff' activity.id %}">
+                                {% csrf_token %}
+                                <input type="file" name="pdf_file" accept="application/pdf" required
+                                    class="text-center"><br>
+                                <button type="submit"
+                                    class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-700">ส่ง</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-nowrap">
+                            {% if not activity.is_approved %}
+                            <span class="bg-red-500/75 text-white px-3 py-1 rounded-full">ยังไม่อนุมัติ</span>
+                            {% else %}
+                            <span class="bg-green-500/75 text-white px-3 py-1 rounded-full">อนุมัติแล้ว</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+
+
+        <div id="custom-info" class="mt-4 text-gray-700 text-sm text-center font-medium bg-gray-50 py-2 rounded-lg ">
+            <!-- อัปเดตข้อมูลตรงนี้ผ่าน JS -->
+        </div>
+
+
+        <div id="custom-pagination" class="flex justify-between items-center mt-4 px-4 py-2">
+            <button id="prev-page"
+                class="border px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed">
+                 ก่อนหน้า
+            </button>
+            <div id="page-numbers" class="flex space-x-2"></div>
+            <button id="next-page"
+                class="border px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed">
+                ถัดไป 
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    div.dataTables_length,
+    div.dataTables_paginate {
+        display: none !important;
+    }
+
+    div.dataTables_info {
+        display: none !important;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        const table = $('#example').DataTable({
+            responsive: true,
+            paging: true,
+            pageLength: 5,
+            language: {
+                search: "ค้นหา:",
+                info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                infoEmpty: "ไม่มีข้อมูลที่จะแสดง",
+                infoFiltered: "(กรองจากทั้งหมด _MAX_ รายการ)",
+                paginate: {
+                    first: "หน้าแรก",
+                    last: "หน้าสุดท้าย",
+                    next: "ถัดไป",
+                    previous: "ก่อนหน้า"
+                },
+                zeroRecords: "ไม่พบข้อมูลที่ค้นหา",
+            },
+            dom: 'lrtip', // ซ่อน pagination และ lengthMenu ของ DataTables
+        });
+
+        function updateCustomInfo() {
+            const pageInfo = table.page.info();
+            $('#custom-info').text(
+                `กำลังแสดง ${pageInfo.start + 1} ถึง ${pageInfo.end} จากทั้งหมด ${pageInfo.recordsDisplay} รายการ`
+            );
+        }
+
+        // Initial update
+        updateCustomInfo();
+
+        // Update custom pagination
+        function updatePagination() {
+            const pageInfo = table.page.info();
+            $('#page-numbers').empty();
+            for (let i = 0; i < pageInfo.pages; i++) {
+                $('#page-numbers').append(`
+                        <button data-page="${i}" class="px-4  py-2 rounded-md ${i === pageInfo.page
+                        ? 'bg-gradient-to-b from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-500 hover:bg-gradient-to-b text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }">
+                            ${i + 1}
+                        </button>
+                    `);
+            }
+            $('#pagination-info').text(`หน้า ${pageInfo.page + 1} จาก ${pageInfo.pages}`);
+            $('#prev-page').prop('disabled', pageInfo.page === 0);
+            $('#next-page').prop('disabled', pageInfo.page + 1 === pageInfo.pages);
+        }
+
+        // Initial pagination update
+        updatePagination();
+
+        // Custom pagination buttons
+        $('#prev-page').on('click', function () {
+            table.page('previous').draw('page');
+            updatePagination();
+        });
+
+        $('#next-page').on('click', function () {
+            table.page('next').draw('page');
+            updatePagination();
+        });
+
+        // Click page number
+        $('#page-numbers').on('click', 'button', function () {
+            const page = $(this).data('page');
+            table.page(page).draw('page');
+            updatePagination();
+        });
+
+        // Custom length menu behavior
+        $('#entries').on('change', function () {
+            table.page.len($(this).val()).draw();
+            updatePagination();
+        });
+
+        // Custom search behavior
+        $('#search').on('input', function () {
+            table.search($(this).val()).draw();
+        });
+
+        // facultyFilter เปลี่ยนประเภทกิจกรรม 
+        $('#facultyFilter').on('change', function () {
+            const selectedFaculty = $(this).val();
+            table.column(2).search(selectedFaculty).draw();
+        });
+
+        // ฟิลเตอร์ตามสถานะ
+        $('#statusFilter').on('change', function () {
+            const selectedStatus = $(this).val();
+            table.column(7).search(selectedStatus).draw();
+        });
+
+        table.on('draw', function () {
+            $('td.dataTables_empty').addClass('p-2');
+        });
+    });
+</script>
